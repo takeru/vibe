@@ -1,12 +1,16 @@
-# 麻雀ゲーム - 完全なドメインモデル
+# 麻雀ゲーム - ユニバーサルプラットフォーム
 
 CLIで遊べる麻雀ゲームと、完全なドメイン駆動設計に基づく麻雀ドメインモデルを実装したプロジェクトです。
+
+**どんなUIからでも、どこでホストされていても、同じゲームに参加できる** ユニバーサル麻雀プラットフォームです。
 
 ## 🎯 プロジェクトの目的
 
 1. **実用的な麻雀ゲーム**: ターミナルで遊べる麻雀ゲームを提供
 2. **完全なドメインモデル**: 麻雀の全ルールを網羅したドメインモデルの設計と実装
-3. **学習リソース**: ドメイン駆動設計（DDD）の実践的な例として活用
+3. **統一API**: CLI、Web、VR、AIなど、あらゆるクライアントが共通APIで参加可能
+4. **柔軟なホスティング**: ローカル、サーバー、P2Pのいずれでもゲームを管理可能
+5. **学習リソース**: ドメイン駆動設計（DDD）とHexagonal Architectureの実践例
 
 ## 📦 技術スタック
 
@@ -37,13 +41,29 @@ vibe/
 │   │   │   └── ScoringService.ts # 点数計算
 │   │   └── events/          # ドメインイベント
 │   │       └── DomainEvents.ts
+│   ├── application/         # アプリケーション層
+│   │   └── contracts/       # 統一API契約
+│   │       ├── Base.ts      # Command/Query/Event基底型
+│   │       ├── Commands.ts  # 全コマンド定義
+│   │       └── Queries.ts   # 全クエリ定義
+│   ├── infrastructure/      # インフラ層
+│   │   ├── hosts/           # ゲームホスト抽象化
+│   │   │   ├── GameHost.ts       # ホスト統一インターフェース
+│   │   │   ├── LocalGameHost.ts  # ローカルホスト
+│   │   │   ├── ServerGameHost.ts # サーバーホスト
+│   │   │   └── P2PGameHost.ts    # P2Pホスト
+│   │   └── adapters/        # プレイヤーアダプター
+│   │       ├── PlayerAdapter.ts        # アダプター統一インターフェース
+│   │       ├── CLIPlayerAdapter.ts     # CLIプレイヤー
+│   │       └── SimpleAIPlayerAdapter.ts # AIプレイヤー
 │   ├── App.tsx              # UIコンポーネント（ink）
 │   ├── index.tsx            # エントリーポイント
 │   ├── types.ts             # シンプルな型定義
 │   └── gameLogic.ts         # シンプルなゲームロジック
 ├── docs/
 │   ├── DOMAIN_MODEL.md      # ドメインモデル設計書
-│   └── ARCHITECTURE.md      # アーキテクチャ設計書
+│   ├── ARCHITECTURE.md      # アーキテクチャ設計書
+│   └── UNIFIED_API.md       # 統一API設計書
 ├── package.json
 ├── tsconfig.json
 └── README.md
@@ -83,6 +103,37 @@ npm start
 3. 矢印キーで捨てる牌を選択し、Enterで捨てる
 4. CPU（3名）が自動でプレイ
 5. 山が尽きるまで続く
+
+## 🌐 統一API - ユニバーサルインターフェース
+
+本プロジェクトの最大の特徴は、**どんなUIからでも、どこでホストされていても、同じゲームに参加できる** 統一APIです。
+
+### あらゆるクライアントをサポート
+
+- **CLI** (ターミナル) - テキストベースUI
+- **Web** (ブラウザ) - グラフィカルUI
+- **VR** (VRデバイス) - 3D空間での麻雀卓
+- **AI** (CPU) - 自動思考プレイヤー
+- **Mobile** (スマートフォン) - タッチUI
+
+### 柔軟なホスティング方式
+
+- **Local** - 同一プロセス内で管理（シングルプレイ向け）
+- **Server** - 中央サーバーで管理（オンライン対戦向け）
+- **P2P** - ピアツーピアで管理（友達同士の対戦向け）
+
+### 統一API仕様
+
+#### Commands（コマンド）
+状態を変更する操作：`CreateGame`, `DrawTile`, `DiscardTile`, `CallChi`, `CallPon`, `DeclareRiichi`, など
+
+#### Queries（クエリ）
+状態を読み取る操作：`GetGameState`, `GetHand`, `GetPossibleActions`, など
+
+#### Events（イベント）
+ゲーム内の出来事通知：`GameStarted`, `TileDrawn`, `RonWin`, など
+
+詳細は [UNIFIED_API.md](docs/UNIFIED_API.md) を参照してください。
 
 ## 📚 ドメインモデル
 
@@ -152,20 +203,31 @@ npm start
 
 詳細な設計ドキュメントを用意しています：
 
+### [UNIFIED_API.md](docs/UNIFIED_API.md) 🆕
+
+統一API設計書（10,000+行）：
+- **あらゆるクライアント対応**: CLI、Web、VR、AI など
+- **柔軟なホスティング**: ローカル、サーバー、P2P
+- 完全なAPI仕様（Commands、Queries、Events）
+- 実装例とユースケース
+- 通信プロトコル（HTTP、WebSocket、WebRTC）
+- セキュリティとパフォーマンス最適化
+
 ### [DOMAIN_MODEL.md](docs/DOMAIN_MODEL.md)
 
-完全なドメインモデルの設計書：
+完全なドメインモデルの設計書（7,000+行）：
 - 全エンティティとValue Objectの詳細仕様
 - 不変条件と制約
 - ゲームフローの説明
 - ユースケース例（リーチ、ポン、役満など）
-- 150+ページ相当の包括的なドキュメント
+- シリアライズ/デシリアライズ
 
 ### [ARCHITECTURE.md](docs/ARCHITECTURE.md)
 
-アーキテクチャ設計書：
+アーキテクチャ設計書（4,000+行）：
 - レイヤードアーキテクチャ
 - DDD（ドメイン駆動設計）パターン
+- Hexagonal Architecture（ポート＆アダプター）
 - CQRS（Command Query Responsibility Segregation）
 - ユースケース駆動設計
 - リポジトリパターン
@@ -184,13 +246,21 @@ npm start
 - **ドメインサービス**: 複数エンティティにまたがるロジック
 - **ドメインイベント**: イベント駆動アーキテクチャ
 
+### アーキテクチャパターン
+
+- **Hexagonal Architecture** (Ports & Adapters)
+- **Clean Architecture** (レイヤー分離)
+- **CQRS** (Command Query Responsibility Segregation)
+- **Event-Driven Architecture**
+
 ### デザインパターン
 
 - Repository Pattern
 - Factory Pattern
-- Strategy Pattern
+- Strategy Pattern (GameHost implementations)
+- Adapter Pattern (PlayerAdapter implementations)
 - Observer Pattern (Domain Events)
-- Command Pattern (CQRS)
+- Command Pattern
 
 ### TypeScript
 
